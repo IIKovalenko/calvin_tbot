@@ -27,10 +27,10 @@ def calvin_talk(bot, update):
         'full_name': update.message.chat.first_name + ' ' + update.message.chat.last_name
     }
     user_text = update.message.text
-    print('{} - {} пишет: {}'.format(update.message.date, t_user.get('full_name'), update.message.text))
+    print('{} - {} пишет: {}'.format(update.message.date, t_user['full_name'], update.message.text))
     logging.info(
         "User: %s(%s), Chat ID: %s, Message: %s",
-        t_user.get('username'), t_user.get('full_name'), update.message.chat.id, update.message.text
+        t_user['username'], t_user['full_name'], update.message.chat.id, update.message.text
     )
     update.message.reply_text('Вы написали: {}'.format(user_text))
 
