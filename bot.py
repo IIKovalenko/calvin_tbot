@@ -26,7 +26,7 @@ def help_msg(bot, update):
     
     /help - вызывает это сообщение
     /planet <имя планеты> - получите информацию по планете (доступна только Солнечная ситема)
-    /start - показывает приветсвтие
+    /start - показывает приветственное сообщение
     
     
     PS.: По мере добавления команд help будет пополняться.
@@ -56,7 +56,6 @@ def planet_info(bot, update):
     """Получение информации о планете с помощью модуля ephem"""
     logging.info('Вызвана команда /planet')
     astro_obj = update.message.text.split()
-    p_name = str(astro_obj[1])
     astro_obj = getattr(ephem, astro_obj[1])
     planet = astro_obj()
     planet.compute()
