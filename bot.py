@@ -54,19 +54,38 @@ def calvin_talk(bot, update):
 
 def planet_info(bot, update):
     """Получение информации о планете с помощью модуля ephem"""
+    planets_list = [
+        'Mercury',
+        'Venus',
+        'Mars',
+        'Jupiter',
+        'Saturn',
+        'Uranus',
+        'Neptune',
+        'Pluto',
+        'Sun',
+        'Moon'
+    ]
     logging.info('Вызвана команда /planet')
-    astro_obj = update.message.text.split()
-    astro_obj = getattr(ephem, astro_obj[1])
-    planet = astro_obj()
-    planet.compute()
-    zodiac = ephem.constellation(planet)
-    bot.send_message(
-        chat_id=update.message.chat.id,
-        text='Вы выбрали планету {}. Она находится в созвездии {}'.format(
-            planet.name,
-            zodiac[1]
+    planet_name = update.message.text.split()
+    if planet_name[1] not in planets_list:
+        update.message.reply_text(
+            '{} такой планеты нет в списке известных мне планет! \n'
+            'Список планет можно посмотреть командой /planet'.format(planet_name[1])
         )
-    )
+    elif len(planet_name) < 2:
+        update.message.reply_text('Доступный список планет: \n' + '\n'.join(planets_list))
+    elif len(planet_name) >= 2:
+        planet = getattr(ephem, planet_name[1])()
+        planet.compute()
+        zodiac = ephem.constellation(planet)
+        bot.send_message(
+            chat_id=update.message.chat.id,
+            text='Вы выбрали планету {}. \nОна находится в созвездии {}'.format(
+                planet.name,
+                zodiac[1]
+            )
+        )
 
 
 def bot_worker():
