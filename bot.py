@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import ephem
@@ -47,8 +46,6 @@ def calvin_talk(bot, update):
         "User: %s(%s), Chat ID: %s, Message: %s",
         t_user['username'], t_user['full_name'], update.message.chat.id, update.message.text
     )
-    # для теста (на проде этот принт уйдёт)
-    print('{} - {} пишет: {}'.format(update.message.date, t_user['full_name'], update.message.text))
     update.message.reply_text('Вы написали: {}'.format(user_text))
 
 
@@ -64,7 +61,7 @@ def planet_info(bot, update):
         'Neptune',
         'Pluto',
         'Sun',
-        'Moon'
+        'Moon',
     ]
     logging.info('Вызвана команда /planet')
     planet_name = update.message.text.split()
@@ -102,4 +99,5 @@ def bot_worker():
     calvin_bot.idle()
 
 
-bot_worker()
+if __name__ == '__main__':
+    bot_worker()
