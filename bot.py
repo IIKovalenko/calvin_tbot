@@ -12,26 +12,26 @@ logging.basicConfig(
     filename='calvin_bot.log'
 )
 
+HELP_TEXT = """
+    Доспуные команды:
+
+    /start - показывает приветственное сообщение
+    /help - вызывает это сообщение
+    /planet <имя планеты> - получите информацию по планете (доступна только Солнечная ситема)
+
+    PS.: По мере добавления команд help будет пополняться.
+    """
+
 
 def start_msg(bot, update):
     text = 'Привет, мой друг, я - Кельвин, виртуальный образец инопланетного существа из фильма "Живое".'
     logging.info(text)
-    update.message.reply_text(text)
+    update.message.reply_text('{}\n{}'.format(text, HELP_TEXT))
 
 
 def help_msg(bot, update):
-    help_text = """
-    Доспуные команды:
-    
-    /help - вызывает это сообщение
-    /planet <имя планеты> - получите информацию по планете (доступна только Солнечная ситема)
-    /start - показывает приветственное сообщение
-    
-    
-    PS.: По мере добавления команд help будет пополняться.
-     """
     logging.info('Вызвана команда /help')
-    update.message.reply_text(help_text)
+    update.message.reply_text(HELP_TEXT)
 
 
 def calvin_talk(bot, update):
@@ -39,7 +39,7 @@ def calvin_talk(bot, update):
         'username': update.message.chat.username,
         'first_name': update.message.chat.first_name,
         'last_name': update.message.chat.last_name,
-        'full_name': update.message.chat.first_name + ' ' + update.message.chat.last_name
+        'full_name': update.message.chat.first_name + ' ' + update.message.chat.last_name,
     }
     user_text = update.message.text
     logging.info(
@@ -49,7 +49,7 @@ def calvin_talk(bot, update):
     update.message.reply_text('Вы написали: {}'.format(user_text))
 
 
-def planet_info(bot, update):
+def planet_info(bot, update, args):
     """Получение информации о планете с помощью модуля ephem"""
     planets_list = [
         'Mercury',
@@ -64,23 +64,23 @@ def planet_info(bot, update):
         'Moon',
     ]
     logging.info('Вызвана команда /planet')
-    planet_name = update.message.text.split()
-    if planet_name[1] not in planets_list:
+    call_planet = ' '.join(args).title()
+    if update.message.text == '/planet':
+        update.message.reply_text('Доступный список планет: \n' + '\n'.join(planets_list))
+    elif call_planet not in planets_list:
         update.message.reply_text(
             '{} такой планеты нет в списке известных мне планет! \n'
-            'Список планет можно посмотреть командой /planet'.format(planet_name[1])
+            'Список планет можно посмотреть командой /planet'.format(call_planet)
         )
-    elif len(planet_name) < 2:
-        update.message.reply_text('Доступный список планет: \n' + '\n'.join(planets_list))
-    elif len(planet_name) >= 2:
-        planet = getattr(ephem, planet_name[1])()
+    elif len(call_planet) >= 2:
+        planet = getattr(ephem, call_planet)()
         planet.compute()
         zodiac = ephem.constellation(planet)
         bot.send_message(
             chat_id=update.message.chat.id,
             text='Вы выбрали планету {}. \nОна находится в созвездии {}'.format(
                 planet.name,
-                zodiac[1]
+                zodiac[1],
             )
         )
 
@@ -92,7 +92,7 @@ def bot_worker():
     dp = calvin_bot.dispatcher
     dp.add_handler(CommandHandler('start', start_msg))
     dp.add_handler(CommandHandler('help', help_msg))
-    dp.add_handler(CommandHandler('planet', planet_info))
+    dp.add_handler(CommandHandler('planet', planet_info, pass_args=True))
     dp.add_handler(MessageHandler(Filters.text, calvin_talk))
 
     calvin_bot.start_polling()
