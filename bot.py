@@ -120,19 +120,17 @@ def get_next_full_moon(bot, update, args):
 
     elif input_date:
         try:
-            input_date += ' 00:00:00'
-            input_date = datetime.strptime(input_date, '%Y-%m-%d %X')
-            if input_date:
-                full_moon_date = ephem.next_full_moon(input_date)
-                update.message.reply_text(
-                    'Полнолуние будет: {}'.format(
-                        datetime.strptime(str(full_moon_date), '%Y/%m/%d %X').strftime('%d %b %Y'),
-                    )
-                )
+            input_date = datetime.strptime(input_date, '%Y-%m-%d')
         except ValueError:
             update.message.reply_text(
                     'Вы ввели дату не правильно!\nВведите дату в формате 2019-01-01 (год-месяц-день)',
             )
+        full_moon_date = ephem.next_full_moon(input_date)
+        update.message.reply_text(
+            'Полнолуние будет: {}'.format(
+                datetime.strptime(str(full_moon_date), '%Y/%m/%d %X').strftime('%d %b %Y'),
+            )
+        )
 
 
 @utils.logging_user_input
