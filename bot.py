@@ -1,14 +1,15 @@
 """Calvin(n5) telegram bot © n05tr0m0"""
 
-import logging
-from datetime import datetime
 import locale
-from collections import Counter
+import logging
+import re
+from datetime import datetime
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import ephem
 
 import utils
+import cities
 
 try:
     import settings
@@ -32,13 +33,22 @@ HELP_TEXT = """
     Доспуные команды:
 
     /start - показывает приветственное сообщение
+    
     /help - вызывает это сообщение
+    
+    /calc <мат. выражение> - Кельвин посчитает за вас :)
+            help - вызывает справку по калькулятору
     /planet <имя планеты> - получите информацию по планете (доступна только Солнечная ситема)
+    
     /next_full_moon <дата> - узнаете ближайшее полнолуние от введённой даты
                     help - подробная справка по команде
+                    
     /wordcount <текст> - считает слова в ведъном вашем тексте
+    /cities start - запускает игру в слова
+            help - вызывает справку по игре
+            
 
-    PS.: По мере добавления команд help будет пополняться.
+    PS.: Пока это всё, на что я способен, но я быстро учусь :).
     """
 
 
@@ -55,7 +65,7 @@ def help_msg(bot, update):
 def calvin_talk(bot, update):
     """Зеркалирование ввода пользователя"""
     user_text = update.message.text
-    update.message.reply_text('Вы написали: {}'.format(user_text))
+    update.message.reply_text('Ты мне написал: {}'.format(user_text))
 
 
 @utils.logging_user_input
@@ -111,8 +121,8 @@ def get_next_full_moon(bot, update, args):
             """
             Справка по команде next_full_moon:
             
-            вызов /next_full_moon - показывает ближайшее полнолуние
-            вызов /next_full_moon <дата> - показывает ближайшее полнолуние от заданной даты.
+            вызов /next_full_moon - покажу ближайшее полнолуние
+            вызов /next_full_moon <дата> - покажу ближайшее полнолуние от заданной даты.
             
             Формат даты для ввода: 2019-01-01 (год, месяц, число)
             """
@@ -123,7 +133,7 @@ def get_next_full_moon(bot, update, args):
             input_date = datetime.strptime(input_date, '%Y-%m-%d')
         except ValueError:
             update.message.reply_text(
-                    'Вы ввели дату не правильно!\nВведите дату в формате 2019-01-01 (год-месяц-день)',
+                    'Ты написал дату не так!\nНапиши в таком виде: 2019-01-01 (год-месяц-день)',
             )
         full_moon_date = ephem.next_full_moon(input_date)
         update.message.reply_text(
@@ -136,14 +146,83 @@ def get_next_full_moon(bot, update, args):
 @utils.logging_user_input
 def word_counter(bot, update, args):
     """Подсчёт слов в отправленном сообщении (тексте)"""
-    ignored_symbols = []
-    user_text = ' '.join(args).lower().split()
-    print(user_text)
+    user_text = ' '.join(args).lower()
     if update.message.text == '/wordcount':
         update.message.reply_text('Введи текст, а я посчитаю слова ;)')
     else:
-        word_count = len(user_text)
-        update.message.reply_text('Ммм... Я насчитал: {} слов'.format(word_count))
+        word_count = re.findall(r"[\w']+", user_text)
+        update.message.reply_text('Ммм... Я насчитал: {} слов'.format(len(word_count)))
+
+
+@utils.logging_user_input
+def cities_game(bot, update, args):
+    input_date = ' '.join(args)
+    # todo: закончить модуль с игрой в города
+    if update.message.text == '/cities start':
+        full_moon_date = ephem.next_full_moon(datetime.now())
+        update.message.reply_text(
+            'Ближайшее полнолуние будет: {}'.format(
+                datetime.strptime(str(full_moon_date), '%Y/%m/%d %X').strftime('%d %b %Y'),
+            )
+        )
+    elif update.message.text == '/cities help':
+        update.message.reply_text(
+            """
+            Справка по игре Города:
+            
+            в базе используется 332 города России.
+
+            вызов /cities start - запускает игру в города
+            вызов /cities stop - заканчивает игру в города
+            вызов /cities scores - показывает сколько очков набрал пользователь, а сколько бот
+
+            Когда игра запущена:
+            
+            ввод: /cities <Наименование города> - без угловых скобок (например /cities Москва)
+            
+            Выигрывает тот, кто назвал больше городов, подсчёт очков происходит после окончания игры.
+            Вызвав команду score игра покажет последний результат.
+            
+            Игра заканчивается, когда вызвана команда stop или закончились города в базе на нужную букву.
+            """
+        )
+    elif update.message.text == '/cities':
+        update.message.reply_text('Игра в Города! (для справки вызовите /cities help')
+
+
+@utils.logging_user_input
+def calc(bot, update, args):
+    user_input = ' '.join(args)
+    if update.message.text == '/calc':
+        update.message.reply_text('Если ты скажешь, что посчитать, я посчитаю за тебя :)')
+    elif update.message.text == '/calc help':
+        update.message.reply_text(
+            """
+            Справка по команде /calc:
+            
+            Напишите Кельвину любое математическое выражение и он его вычислит.
+            
+            Пример: /calc (8 + 4) * 2   # ответ: 24
+                    /calc 2 + 3         # ответ: 5
+                    /calc 27 * 8        # ответ: 216
+                    /calc 315 / 4       # ответ: 78.75
+            
+            """
+        )
+
+    elif user_input:
+        if len(user_input) < 3:
+            return update.message.reply_text('Слишком коротко, таких математических выражений не быыает :)')
+
+        for character in user_input:
+            if character not in '0123456789-+/* ':
+                return update.message.reply_text('Ты не ввёл цифры и хочешь, чтобы я посчитал :)')
+
+        if user_input[0] in '/*+':
+            return update.message.reply_text('Это не математическое выражение, мой друг :)')
+        else:
+            result = eval(user_input)
+            update.message.reply_text('Я посчитал, это будет: {:.2f}  :)'.format(result))
 
 
 def bot_worker():
@@ -156,6 +235,8 @@ def bot_worker():
     dp.add_handler(CommandHandler('planet', planet_info, pass_args=True))
     dp.add_handler(CommandHandler('next_full_moon', get_next_full_moon, pass_args=True))
     dp.add_handler(CommandHandler('wordcount', word_counter, pass_args=True))
+    dp.add_handler(CommandHandler('cities', cities_game, pass_args=True))
+    dp.add_handler(CommandHandler('calc', calc, pass_args=True))
     dp.add_handler(MessageHandler(Filters.text, calvin_talk))
 
     calvin_bot.start_polling()
