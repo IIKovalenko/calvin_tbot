@@ -2,6 +2,8 @@
 
 import logging
 
+from telegram import ReplyKeyboardMarkup
+
 
 def logging_user_input(bot_func):
     """Логирование пользовательского ввода"""
@@ -20,3 +22,14 @@ def logging_user_input(bot_func):
 
         return bot_func(*args, **kwargs)
     return logging_wrapper
+
+
+def get_keyboard():
+    keyb = ReplyKeyboardMarkup(
+        [
+            ['/start', '/help', '/calc', '/planet'],
+            ['/wordcount', '/next_full_moon'],
+            ['/weather']
+        ], resize_keyboard=True,
+    )
+    return keyb
