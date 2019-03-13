@@ -5,7 +5,7 @@ import logging
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
-import bot_hendlers
+import bot_handlers
 
 try:
     import settings
@@ -31,15 +31,15 @@ def bot_worker():
     logging.info('Calvin launch from space station...')
 
     dp = calvin_bot.dispatcher
-    dp.add_handler(CommandHandler('start', bot_hendlers.start_msg))
-    dp.add_handler(CommandHandler('help', bot_hendlers.help_msg))
-    dp.add_handler(CommandHandler('planet', bot_hendlers.planet_info, pass_args=True))
-    dp.add_handler(CommandHandler('next_full_moon', bot_hendlers.get_next_full_moon, pass_args=True))
-    dp.add_handler(CommandHandler('wordcount', bot_hendlers.word_counter, pass_args=True))
-    dp.add_handler(CommandHandler('cities', bot_hendlers.cities_game, pass_args=True))
-    dp.add_handler(CommandHandler('calc', bot_hendlers.calc, pass_args=True))
-    dp.add_handler(CommandHandler('weather', bot_hendlers.get_weather, pass_args=True))
-    dp.add_handler(MessageHandler(Filters.text, bot_hendlers.calvin_talk))
+    dp.add_handler(CommandHandler('start', bot_handlers.start_msg))
+    dp.add_handler(CommandHandler('help', bot_handlers.help_msg))
+    dp.add_handler(CommandHandler('planet', bot_handlers.planet_info, pass_args=True))
+    dp.add_handler(CommandHandler('next_full_moon', bot_handlers.get_next_full_moon, pass_args=True))
+    dp.add_handler(CommandHandler('wordcount', bot_handlers.word_counter, pass_args=True))
+    dp.add_handler(CommandHandler('cities', bot_handlers.cities_game, pass_args=True))
+    dp.add_handler(CommandHandler('calc', bot_handlers.calc, pass_args=True))
+    dp.add_handler(CommandHandler('weather', bot_handlers.get_weather, pass_args=True))
+    dp.add_handler(MessageHandler(Filters.text, bot_handlers.calvin_talk))
 
     calvin_bot.start_polling()
     calvin_bot.idle()

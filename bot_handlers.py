@@ -1,9 +1,11 @@
+"""All hadlers function of Calvin(n5) bot"""
+
 import re
 from datetime import datetime
 from random import choice
 
-import requests
 import ephem
+import requests
 
 
 import cities
